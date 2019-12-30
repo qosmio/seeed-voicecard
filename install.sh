@@ -70,7 +70,7 @@ function check_kernel_headers() {
     exit 1;
   fi
 
-  apt-get -y --reinstall install raspberrypi-kernel
+  apt-get -y install raspberrypi-kernel
 }
 
 function download_install_debpkg() {
@@ -106,13 +106,13 @@ function install_kernel() {
 
 # update and install required packages
 which apt &>/dev/null
-if [[ $? -eq 0 ]]; then
-  apt update -y
-  apt-get -y install dkms git i2c-tools libasound2-plugins
-  install_kernel
+#if [[ $? -eq 0 ]]; then
+  #apt update -y
+  #apt-get -y install dkms git i2c-tools
+  #install_kernel
   # rpi-update checker
-  check_kernel_headers
-fi
+  #check_kernel_headers
+#fi
 
 # Arch Linux
 which pacman &>/dev/null
@@ -158,9 +158,9 @@ install_module "./" "seeed-voicecard"
 
 
 # install dtbos
-cp seeed-2mic-voicecard.dtbo /boot/overlays
-cp seeed-4mic-voicecard.dtbo /boot/overlays
-cp seeed-8mic-voicecard.dtbo /boot/overlays
+cp -f seeed-2mic-voicecard.dtbo /boot/overlays
+cp -f seeed-4mic-voicecard.dtbo /boot/overlays
+cp -f seeed-8mic-voicecard.dtbo /boot/overlays
 
 #install alsa plugins
 # no need this plugin now
@@ -176,16 +176,16 @@ grep -q "^snd-soc-wm8960$" /etc/modules || \
   echo "snd-soc-wm8960" >> /etc/modules  
 
 #set dtoverlays
-sed -i -e 's:#dtparam=i2c_arm=on:dtparam=i2c_arm=on:g'  /boot/config.txt || true
-grep -q "^dtoverlay=i2s-mmap$" /boot/config.txt || \
-  echo "dtoverlay=i2s-mmap" >> /boot/config.txt
+#sed -i -e 's:#dtparam=i2c_arm=on:dtparam=i2c_arm=on:g'  /boot/config.txt || true
+#grep -q "^dtoverlay=i2s-mmap$" /boot/config.txt || \
+#  echo "dtoverlay=i2s-mmap" >> /boot/config.txt
 
 
-grep -q "^dtparam=i2s=on$" /boot/config.txt || \
-  echo "dtparam=i2s=on" >> /boot/config.txt
+#grep -q "^dtparam=i2s=on$" /boot/config.txt || \
+#  echo "dtparam=i2s=on" >> /boot/config.txt
 
 #install config files
-mkdir /etc/voicecard || true
+mkdir -p /etc/voicecard || true
 cp *.conf /etc/voicecard
 cp *.state /etc/voicecard
 
@@ -205,7 +205,7 @@ echo "git commit -m \"origin configures\""
 git --git-dir=/etc/voicecard/.git --work-tree=/etc/voicecard/ commit  -m "origin configures"
 
 cp seeed-voicecard /usr/bin/
-cp seeed-voicecard.service /lib/systemd/system/
+cp seeed-voicecard.service /etc/systemd/system/
 systemctl enable  seeed-voicecard.service 
 systemctl start   seeed-voicecard
 
